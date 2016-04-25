@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 def parse_country(file_name):
 	age_gender_dict = {}
@@ -31,12 +32,21 @@ def parse_country(file_name):
 
 	return age_gender_dict
 
-def get_top_3(gender, age):
-	query = []
+def get_top_3(gender, age, dd):
+	if age == '':
+		return ['', '', '']
+	if gender == '-unknown-' or gender == 'OTHER':
+		foo = ['male', 'female']
+		ranfoo = random.randint(0,1)
+		gender = foo[ranfoo]
+
+	age = float(age)
+	gender = gender.lower()
+	query = ''
 	if age <= 4 and age >= 0:
 		query = gender + '0-4'
-	elif age <= 9 and age >= 4:
-		query = gender + '4-9'
+	elif age <= 9 and age >= 5:
+		query = gender + '5-9'
 	elif age <= 14 and age >= 10:
 		query = gender + '10-14'
 	elif age <= 19 and age >= 15:
@@ -75,8 +85,8 @@ def get_top_3(gender, age):
 		query = gender + '95-99'
 	else:
 		query = gender + '100+'
-	print query
-	dd = parse_country('age_gender_bkts.csv')
+	# print query
 	return dd[query]
 
-print get_top_3('female', 80)
+# dd = parse_country('age_gender_bkts.csv')
+# print get_top_3('male', 35, dd)

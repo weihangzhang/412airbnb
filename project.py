@@ -2,10 +2,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 import numpy as np
+from parse_agegender import *
+from parse_session import *
 # Parse train_users_2.csv
 
 def parse_matrix(file_name, test):
 	# make several lists for classifying
+	agegender_dict = parse_country('age_gender_bkts.csv')
+	print "agegender parse done..."
+	session_dict = parse_session('sessions.csv')
+	print "session parse done..."
 	id_list = []
 	age_list = []
 	gender_list = []
@@ -18,6 +24,10 @@ def parse_matrix(file_name, test):
 	app_list = []
 	device_type_list = []
 	browser_list = []
+	agegender_1_list = []
+	agegender_2_list = []
+	agegender_3_list = []
+	most_device_list = []
 
 	# begin parsing user file
 	train_user_dict = {}
@@ -37,8 +47,28 @@ def parse_matrix(file_name, test):
 				temp_list.extend(user_list[4:-1])
 			else:
 				temp_list.extend(user_list[4:])
+
+			# agegender parsing and append
+			temp_age = user_list[5]
+			temp_gender = user_list[4]
+			agegender_3 = get_top_3(temp_gender, temp_age, agegender_dict)
+			temp_list.extend(agegender_3)
+			agegender_1_list.append(agegender_3[0])
+			agegender_2_list.append(agegender_3[1])
+			agegender_3_list.append(agegender_3[2])
+
+			# session parsing and append
+			try:
+				session_value = session_dict[user_list[0]]
+			except:
+				session_value = [0, 0, 0, 0, 0, 0, 0, '']
+			most_device_list.append(session_value[-1])
+			temp_list.append(session_value[-1])
+			temp_list.extend(session_value[:-1])
+
 			train_user_dict[user_list[0]] = temp_list
 
+			# append attributes to list 
 			id_list.append(user_list[0])
 			gender_list.append(user_list[4])
 			age_list.append(user_list[5])
@@ -63,11 +93,16 @@ def parse_matrix(file_name, test):
 	app_list = list(set(app_list))
 	device_type_list = list(set(device_type_list))
 	browser_list = list(set(browser_list))
+	agegender_1_list = list(set(agegender_1_list))
+	agegender_2_list = list(set(agegender_2_list))
+	agegender_3_list = list(set(agegender_3_list))
+	most_device_list = list(set(most_device_list))
 
 	big_list = [gender_list, age_list, signup_method_list, signup_flow_list, language_list, channel_list, provider_list, 
-				tracked_list, app_list, device_type_list, browser_list]
+				tracked_list, app_list, device_type_list, browser_list, agegender_1_list, agegender_2_list, agegender_3_list, most_device_list]
 
 
+	# print train_user_dict["lsw9q7uk0j"]
 	# Classifying our data into index-based form
 	for key in train_user_dict:
 		value = train_user_dict[key]
@@ -75,7 +110,7 @@ def parse_matrix(file_name, test):
 			if value[i + 1] in big_list[i]:
 				value[i + 1] = big_list[i].index(value[i + 1])
 
-	# print train_user_dict["gxn3p5htnn"]
+	# print train_user_dict["lsw9q7uk0j"]
 	# print len(train_user_dict.keys())
 	m = len(train_user_dict.values())
 	n = len(train_user_dict.values()[0])

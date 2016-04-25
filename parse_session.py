@@ -47,21 +47,34 @@ def parse_session(file_name):
 				# break
 
 			else:
-				if session_list[1] not in session_dict[user_id][0] and session_list[1] != "":
+				if session_list[1] != "":
 					session_dict[user_id][0].append(session_list[1])
-				if session_list[2] not in session_dict[user_id][1] and session_list[2] != "":
+				if session_list[2] != "":
 					session_dict[user_id][1].append(session_list[2])
-				if session_list[3] not in session_dict[user_id][2] and session_list[3] != "":
+				if session_list[3] != "":
 					session_dict[user_id][2].append(session_list[3])
-				if session_list[4] not in session_dict[user_id][3] and session_list[4] != "":
+				if session_list[4] != "":
 					session_dict[user_id][3].append(session_list[4])
 				session_dict[user_id][4] += secs_elapsed
 				session_dict[user_id][5] += 1
 				session_dict[user_id][6] = session_dict[user_id][4] / session_dict[user_id][5]
 
 
+
+		for key in session_dict.keys():
+			value = session_dict[key]
+			value.append(max(set(value[3]), key=value[3].count))
+			for i in range(4):
+				value[i] = len(list(set(value[i])))
+
 	return session_dict
 
+def get_session_feature(session_dict, user_id):
+	if user_id not in session_dict.keys():
+		return [0, 0, 0, 0, 0, 0, 0, '']
+	else:
+		return session_dict[user_id]
 
-my_dict = parse_session('sessions.csv')
-print my_dict["d1mm9tcy42"]
+
+# my_dict = parse_session('sessions.csv')
+# print my_dict["d1mm9tcy42"]
