@@ -139,9 +139,8 @@ def calculate_loss(model):
     data_loss += reg_lambda/2 * (np.sum(np.square(W1)) + np.sum(np.square(W2)))
     return 1./num_examples * data_loss
 
-# Helper function to predict an output (0 or 1)
+# Helper function to predict an output
 def predict(model, x):
-    
     W1, b1, W2, b2 = model['W1'], model['b1'], model['W2'], model['b2']
     # Forward propagation
     z1 = x.dot(W1) + b1
@@ -216,7 +215,7 @@ print 'num exp', num_examples
 nn_input_dim = len(train[0]) # input layer dimensionality
 nn_output_dim = 12 # output layer dimensionality
  
-# Gradient descent parameters (I picked these by hand)
+# Gradient descent parameters
 epsilon = 0.0000005 # learning rate for gradient descent
 reg_lambda = 0.0000005 # regularization strength
 
