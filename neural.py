@@ -127,13 +127,13 @@ def parse_matrix(file_name, test):
 def calculate_loss(model):
     W1, b1, W2, b2 = model['W1'], model['b1'], model['W2'], model['b2']
     # Forward propagation to calculate our predictions
-    z1 = X.dot(W1) + b1
+    z1 = train.dot(W1) + b1
     a1 = np.tanh(z1)
     z2 = a1.dot(W2) + b2
     exp_scores = np.exp(z2)
     probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
     # Calculating the loss
-    corect_logprobs = -np.log(probs[range(num_examples), y])
+    corect_logprobs = -np.log(probs[range(num_examples), country_list])
     data_loss = np.sum(corect_logprobs)
     # Add regulatization term to loss (optional)
     data_loss += reg_lambda/2 * (np.sum(np.square(W1)) + np.sum(np.square(W2)))
@@ -149,11 +149,18 @@ def predict(model, x):
     z2 = a1.dot(W2) + b2
     exp_scores = np.exp(z2)
     probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
-
+    out_file = open('output.txt', 'w')
+    out_file.write('id,country\n')
+    print probs
+    for i in range(len(probs)):
+    	rank = np.argsort(probs[i])
+    	print rank
+    	for number in range(5):
+			out_file.write(str(training_id_list[i]) + ',' + str(country_set[rank[11-number]]) + '\n')
     return np.argmax(probs, axis = 1)
 
 
-def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, num_passes = 1000):
+def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, num_passes = 2000):
 	np.random.seed(0)
 	W1 = np.random.randn(nn_input_dim, nn_hdim) / np.sqrt(nn_input_dim)
 	b1 = np.zeros((1, nn_hdim))
@@ -168,7 +175,7 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, nu
 		z2 = a1.dot(W2) + b2
 		exp_scores = np.exp(z2)
 		probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
-		print probs
+		# print probs
 		# start back propagation
 		delta3 = probs
 		delta3[range(num_examples), y] -= 1
@@ -191,7 +198,7 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, nu
 		model['b1'] = b1
 		model['W2'] = W2
 		model['b2'] = b2
-
+		print calculate_loss(model)
 	return model
 
 
@@ -210,8 +217,8 @@ nn_input_dim = len(train[0]) # input layer dimensionality
 nn_output_dim = 12 # output layer dimensionality
  
 # Gradient descent parameters (I picked these by hand)
-epsilon = 0.00001 # learning rate for gradient descent
-reg_lambda = 0.00001 # regularization strength
+epsilon = 0.0000005 # learning rate for gradient descent
+reg_lambda = 0.0000005 # regularization strength
 
 print 'start building neural network...'
 country_set = list(set(country_list))
@@ -220,4 +227,4 @@ for i in range(len(country_list)):
 print country_set
 model = build_model(train, 30, nn_input_dim, nn_output_dim, num_examples, country_list)
 print 'start predicting neural network...'
-print predict(model, test)
+predict(model, test)
