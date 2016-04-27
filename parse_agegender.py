@@ -29,7 +29,7 @@ def parse_country(file_name):
 		temp_list.append(age_gender_dict[key][1][0])
 		temp_list.append(age_gender_dict[key][2][0])
 		age_gender_dict[key] = temp_list
-
+	file.close()
 	return age_gender_dict
 
 def get_top_3(gender, age, dd):

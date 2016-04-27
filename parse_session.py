@@ -66,7 +66,7 @@ def parse_session(file_name):
 			value.append(max(set(value[3]), key=value[3].count))
 			for i in range(4):
 				value[i] = len(list(set(value[i])))
-
+	file.close()
 	return session_dict
 
 def get_session_feature(session_dict, user_id):

@@ -121,6 +121,7 @@ def parse_matrix(file_name, test):
 		train[counter] = value
 		counter += 1
 
+	file.close()
 	return train, country_list, id_list
 
 # Helper function to evaluate the total loss on the dataset
@@ -159,7 +160,7 @@ def predict(model, x):
     return np.argmax(probs, axis = 1)
 
 
-def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, num_passes = 300):
+def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, num_passes = 50):
 	np.random.seed(0)
 	W1 = np.random.randn(nn_input_dim, nn_hdim) / np.sqrt(nn_input_dim)
 	b1 = np.zeros((1, nn_hdim))
@@ -204,6 +205,7 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, nu
 file_name = './train_users_2.csv'
 train, country_list, id_list = parse_matrix(file_name, False)
 print 'training parse done'
+
 test_name = './test_users.csv'
 test, test_country_list, training_id_list = parse_matrix(test_name, True)
 print 'testing parse done'
@@ -216,8 +218,8 @@ nn_input_dim = len(train[0]) # input layer dimensionality
 nn_output_dim = 12 # output layer dimensionality
  
 # Gradient descent parameters
-epsilon = 0.0000005 # learning rate for gradient descent
-reg_lambda = 0.0000005 # regularization strength
+epsilon = 0.000001 # learning rate for gradient descent
+reg_lambda = 0.000001 # regularization strength
 
 print 'start building neural network...'
 country_set = list(set(country_list))
