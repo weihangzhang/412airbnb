@@ -3,7 +3,7 @@ from parse_agegender import *
 from parse_session import *
 log2=lambda x:math.log(x) / math.log(2)
 
-attributes = list(range(3))
+attributes = list(range(2))
 targetIndex = -1
 
 def parse_matrix(file_name, test):
@@ -193,45 +193,67 @@ def getMajor(country_list):
             myDict[item] += 1
         else:
             myDict[item] = 1
+    for key in myDict.keys():
+        myDict[key] = myDict[key]*1.0/len(country_list)
+    return myDict
 
-    largest = max(myDict, key = myDict.get)
-    return largest
+def getData(country_list, data, largest):
+    split_attr = data[:, largest]
+    unique_split_attr = np.unique(split_attr)
+    data_removed = np.delete(data, np.s_[largest:largest + 1], axis = 1)
+    ret_data = []
+    ret_country = []
+    for i in range(len(unique_split_attr)):
+        temp_data_matrix = np.empty((len(data_removed[0]),))
+        temp_country_list = []
+        for j in range(len(split_attr)):
+            if unique_split_attr[i] == split_attr[j]:
+                temp_data_matrix = np.vstack((temp_data_matrix, data_removed[j]))
+                temp_country_list.append(country_list[j])
+        temp_data_matrix = np.delete(temp_data_matrix, 0, 0)
+        ret_data.append(temp_data_matrix)
+        ret_country.append(temp_country_list)
 
-def getData(data, largest):
-    
-    return np.delete(data, np.s_[largest:largest + 1], axis = 1)
+    return ret_data, ret_country, unique_split_attr
 
 def buildTree(data, attributes, target_entropy, recursion, targetIndex, country_list):
 
     recursion += 1
     classes = country_list
-    if data.all() is None or len(attributes) == 1:
+    if len(attributes) == 1:
         return getMajor(country_list)
 
-    elif classes.count(classes[0]) == len(classes):
-        major = classes[0]
-        return classes[0]
     else:
     # choose the best attribute
         largest, attrDict = calcInfoGain(data, target_entropy)
 
         tree = {largest: {}}
-        largest_list = data[:, largest]
-        largest_list = list(set(largest_list))
 
-        for value in largest_list:
-            newData = getData(data, largest)
-            newAttr = attributes[:]
-            newAttr.pop(largest)
-            subTree = buildTree(newData, newAttr, target_entropy, recursion, targetIndex, country_list)
-            tree[largest][value] = subTree
+        ret_data, ret_country, value = getData(country_list, data, largest)
+        newAttr = attributes[:]
+        newAttr.pop(largest)
+
+        for i in range(len(ret_data)):
+            subTree = buildTree(ret_data[i], newAttr, target_entropy, recursion, targetIndex, ret_country[i])
+            tree[largest][value[i]] = subTree
+        print tree
     return tree
 
 
 def predict(test_data, model):
-    while isinstance(tempDict, dict):
-        tempDict = tempDict[temp.keys()[0]]
-        tempDict
+    for i in range(len(test_data)):
+        ret_result = predict_help(test_data[i], model)
+        # print ret_result
+
+def predict_help(test_row, model):
+    if 'NDF' in model.keys():
+        ret_dict = sorted(model.items(), key=lambda x:x[1])
+        print ret_dict
+        return ret_dict
+    attr = model.keys()[0]
+    split_attr = test_row[int(attr)]
+    predict_help(test_row, model[attr][split_attr])
+
 
 
 
@@ -268,14 +290,15 @@ def predict(test_data, model):
 
 file_name = './train_users_2.csv'
 train, country_list, id_list = parse_matrix(file_name, False)
-train = train[:, 1:4]
+train = train[:, 3:5]
 print 'training parse done'
 test_name = './test_users.csv'
 test, test_country_list, training_id_list = parse_matrix(test_name, True)
-test = test[:, 1:4]
+test = test[:, 3:5]
 print 'testing parse done'
 target_entropy = calcTargetEntropy(country_list)
 largest, attrDict = calcInfoGain(train, target_entropy)
 result = buildTree(train, attributes, target_entropy, 0, -1, country_list)
 print result
 print result.keys()
+print predict(test, result)
