@@ -1,17 +1,18 @@
 import math
+import operator
 from parse_agegender import *
 from parse_session import *
 log2=lambda x:math.log(x) / math.log(2)
 
-attributes = list(range(2))
+attributes = list(range(22))
 targetIndex = -1
 
 def parse_matrix(file_name, test):
     # make several lists for classifying
     agegender_dict = parse_country('age_gender_bkts.csv')
     print "agegender parse done..."
-    #session_dict = parse_session('sessions.csv')
-    #print "session parse done..."
+    session_dict = parse_session('sessions.csv')
+    print "session parse done..."
     id_list = []
     age_list = []
     gender_list = []
@@ -24,10 +25,10 @@ def parse_matrix(file_name, test):
     app_list = []
     device_type_list = []
     browser_list = []
-    # agegender_1_list = []
-    # agegender_2_list = []
-    # agegender_3_list = []
-    # most_device_list = []
+    agegender_1_list = []
+    agegender_2_list = []
+    agegender_3_list = []
+    most_device_list = []
 
     # begin parsing user file
     train_user_dict = {}
@@ -49,22 +50,22 @@ def parse_matrix(file_name, test):
                 temp_list.extend(user_list[4:])
 
             # agegender parsing and append
-            # temp_age = user_list[5]
-            # temp_gender = user_list[4]
-            # agegender_3 = get_top_3(temp_gender, temp_age, agegender_dict)
-            # temp_list.extend(agegender_3)
-            # agegender_1_list.append(agegender_3[0])
-            # agegender_2_list.append(agegender_3[1])
-            # agegender_3_list.append(agegender_3[2])
+            temp_age = user_list[5]
+            temp_gender = user_list[4]
+            agegender_3 = get_top_3(temp_gender, temp_age, agegender_dict)
+            temp_list.extend(agegender_3)
+            agegender_1_list.append(agegender_3[0])
+            agegender_2_list.append(agegender_3[1])
+            agegender_3_list.append(agegender_3[2])
 
-            # session parsing and append
-            # try:
-            #     session_value = session_dict[user_list[0]]
-            # except:
-            #     session_value = [0, 0, 0, 0, 0, 0, 0, '']
-            # most_device_list.append(session_value[-1])
-            # temp_list.append(session_value[-1])
-            # temp_list.extend(session_value[:-1])
+            #session parsing and append
+            try:
+                session_value = session_dict[user_list[0]]
+            except:
+                session_value = [0, 0, 0, 0, 0, 0, 0, '']
+            most_device_list.append(session_value[-1])
+            temp_list.append(session_value[-1])
+            temp_list.extend(session_value[:-1])
 
             train_user_dict[user_list[0]] = temp_list
 
@@ -93,13 +94,13 @@ def parse_matrix(file_name, test):
     app_list = list(set(app_list))
     device_type_list = list(set(device_type_list))
     browser_list = list(set(browser_list))
-    # agegender_1_list = list(set(agegender_1_list))
-    # agegender_2_list = list(set(agegender_2_list))
-    # agegender_3_list = list(set(agegender_3_list))
-    # most_device_list = list(set(most_device_list))
+    agegender_1_list = list(set(agegender_1_list))
+    agegender_2_list = list(set(agegender_2_list))
+    agegender_3_list = list(set(agegender_3_list))
+    most_device_list = list(set(most_device_list))
 
     big_list = [gender_list, age_list, signup_method_list, signup_flow_list, language_list, channel_list, provider_list, 
-                tracked_list, app_list, device_type_list, browser_list]
+                tracked_list, app_list, device_type_list, browser_list, agegender_1_list, agegender_2_list, agegender_3_list, most_device_list]
 
 #, agegender_1_list, agegender_2_list, agegender_3_list, most_device_list
     # print train_user_dict["lsw9q7uk0j"]
@@ -236,23 +237,32 @@ def buildTree(data, attributes, target_entropy, recursion, targetIndex, country_
         for i in range(len(ret_data)):
             subTree = buildTree(ret_data[i], newAttr, target_entropy, recursion, targetIndex, ret_country[i])
             tree[largest][value[i]] = subTree
-        print tree
     return tree
 
 
 def predict(test_data, model):
+    out_file = open('decisionTreeOutput.txt', 'w')
+    out_file.write('id,country\n')
     for i in range(len(test_data)):
         ret_result = predict_help(test_data[i], model)
-        # print ret_result
+        ret_dict = sorted(ret_result.iteritems(), key=operator.itemgetter(1), reverse = True)
+        for number in range(len(ret_result.keys())):
+            out_file.write(str(training_id_list[i]) + ',' + str(ret_dict[number][0]) + '\n')
+            if number >= 4:
+                break
+        
+    out_file.close()
+
 
 def predict_help(test_row, model):
-    if 'NDF' in model.keys():
-        ret_dict = sorted(model.items(), key=lambda x:x[1])
-        print ret_dict
-        return ret_dict
-    attr = model.keys()[0]
-    split_attr = test_row[int(attr)]
-    predict_help(test_row, model[attr][split_attr])
+    if isinstance(model.keys()[0], str):
+        ret_dict = sorted(model.iteritems(), key=operator.itemgetter(1), reverse = True)
+        return model
+
+    else:
+        attr = model.keys()[0]
+        split_attr = test_row[attr]
+        return predict_help(test_row, model[attr][split_attr])
 
 
 
@@ -290,15 +300,13 @@ def predict_help(test_row, model):
 
 file_name = './train_users_2.csv'
 train, country_list, id_list = parse_matrix(file_name, False)
-train = train[:, 3:5]
+train = train[:,1:]
 print 'training parse done'
 test_name = './test_users.csv'
 test, test_country_list, training_id_list = parse_matrix(test_name, True)
-test = test[:, 3:5]
+test = test[:,1:]
 print 'testing parse done'
 target_entropy = calcTargetEntropy(country_list)
 largest, attrDict = calcInfoGain(train, target_entropy)
 result = buildTree(train, attributes, target_entropy, 0, -1, country_list)
-print result
-print result.keys()
-print predict(test, result)
+predict(test, result)
