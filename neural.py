@@ -238,7 +238,7 @@ print 'testing parse done'
 num_examples = len(train) # training set size
 # num_examples = 2
 print 'num exp', num_examples
-nn_input_dim = len(train[0])-1 # input layer dimension
+nn_input_dim = len(train[0]) # input layer dimension
 nn_output_dim = 12 # output layer dimension
  
 # Gradient descent parameters
@@ -251,7 +251,8 @@ for i in range(len(country_list)):
 	country_list[i] = country_set.index(country_list[i])
 print country_set
 
-train = train[:,1:]
+# train = train[:,1:]
+train = train
 
 yyy = np.zeros((len(country_list), 12))
 for i in range(len(country_list)):
@@ -261,5 +262,6 @@ print test[1, :]
 model = build_model(train, 50, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, country_list)
 # model = build_model(train, 23, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, yyy)
 print 'start predicting neural network...'
-predict(model, test[:, 1:])
+# predict(model, test[:, 1:])
+predict(model, test)
 # predict(model, train)
