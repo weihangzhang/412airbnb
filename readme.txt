@@ -1,9 +1,9 @@
 Using Python 2.7.10
 
-In order to run this file, you need to install numpy, scipy, sklearn python library on your machine.
+The file names for all three algorithms are: 'decisionTree.py', 'neural.py' and 'naivebyes.py'. 'neural_2_hlayer.py' is the 2 hidden layers version of neural network implementation.
 
-cd into folder and try python project.py on command line to execute file
+In order to run these files, you need to install numpy library on your machine.
 
-In the project.py, we open the test_users.csv and train_users_2.csv as raw data. By applying random forest algorithm, we write our minning results into output.txt
+cd into folder and do: 'python' + file_name to run the file. All the files are ready to run with our best parameters. 
 
-You can see output is in the output.txt
+The outputs are in the .txt files named: decisionTreeOutput.txt, naive_byes_out.txt and neural_out.txt
