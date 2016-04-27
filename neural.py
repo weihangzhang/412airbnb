@@ -157,6 +157,7 @@ def predict(model, x):
     	print rank
     	for number in range(5):
 			out_file.write(str(training_id_list[i]) + ',' + str(country_set[rank[11-number]]) + '\n')
+	out_file.close()
     return np.argmax(probs, axis = 1)
 
 
@@ -228,4 +229,5 @@ for i in range(len(country_list)):
 print country_set
 model = build_model(train, 30, nn_input_dim, nn_output_dim, num_examples, country_list)
 print 'start predicting neural network...'
-predict(model, test)
+for i in range(len(test)):
+	predict(model, test[i])

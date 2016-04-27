@@ -162,3 +162,4 @@ for i in range(len(ret)):
 	for number in range(5):
 		out_file.write(str(training_id_list[i]) + ',' + str(classes[rank[number]]) + '\n')
 	# break
+out_file.close()
