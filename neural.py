@@ -10,8 +10,8 @@ def parse_matrix(file_name, test):
 	# make several lists for classifying
 	agegender_dict = parse_country('age_gender_bkts.csv')
 	print "agegender parse done..."
-	session_dict = parse_session('sessions.csv')
-	print "session parse done..."
+	# session_dict = parse_session('sessions.csv')
+	# print "session parse done..."
 	id_list = []
 	age_list = []
 	gender_list = []
@@ -103,7 +103,7 @@ def parse_matrix(file_name, test):
 				tracked_list, app_list, device_type_list, browser_list, agegender_1_list, agegender_2_list, agegender_3_list, most_device_list]
 
 	# big_list = [gender_list, age_list, signup_method_list, signup_flow_list, language_list, channel_list, provider_list, 
-				# tracked_list, app_list, device_type_list, browser_list]
+	# 			tracked_list, app_list, device_type_list, browser_list]
 
 	# print train_user_dict["lsw9q7uk0j"]
 	# Classifying our data into index-based form
@@ -139,6 +139,7 @@ def calculate_loss(model):
     a1 = np.tanh(z1)
     z2 = a1.dot(W2) + b2
     exp_scores = np.exp(z2)
+
     probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
     # Calculating the loss
     corect_logprobs = -np.log(probs[range(num_examples), country_list])
@@ -153,11 +154,13 @@ def predict(model, x):
     b1 = model['b1']
     W2 = model['W2']
     b2 = model['b2']
+
     # Forward propagation
     z1 = x.dot(W1) + b1
     a1 = np.tanh(z1)
     z2 = a1.dot(W2) + b2
     exp_scores = np.exp(z2)
+
     print exp_scores
     probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
 
@@ -174,7 +177,7 @@ def predict(model, x):
     return np.argmax(probs, axis = 1)
 
 
-def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, y, num_passes = 300):
+def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, y, num_passes = 100):
 	np.random.seed(0)
 	W1 = np.random.randn(nn_input_dim, nn_hdim) / np.sqrt(nn_input_dim)
 	b1 = np.zeros((1, nn_hdim))
@@ -188,6 +191,7 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learn
 		a1 = np.tanh(z1)
 		z2 = a1.dot(W2) + b2
 		exp_scores = np.exp(z2)
+
 		probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
 		# print probs
 		# start back propagation
@@ -200,6 +204,7 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learn
 		delta2 = delta3.dot(W2.T) * (1 - np.power(a1, 2))
 		dW1 = np.dot(train.T, delta2)
 		db1 = np.sum(delta2, axis = 0)
+
 		dW2 += regular_rate * W2
 		dW1 += regular_rate * W1
 
@@ -213,6 +218,7 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learn
 		model['b1'] = b1
 		model['W2'] = W2
 		model['b2'] = b2
+
 		print calculate_loss(model)
 		learning_rate *= 0.99
 		regular_rate *= 0.99
@@ -250,10 +256,10 @@ train = train[:,1:]
 yyy = np.zeros((len(country_list), 12))
 for i in range(len(country_list)):
 	yyy[i][country_list[i]] = 1
-
+	
+print test[1, :]
 model = build_model(train, 50, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, country_list)
 # model = build_model(train, 23, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, yyy)
 print 'start predicting neural network...'
-
 predict(model, test[:, 1:])
 # predict(model, train)
