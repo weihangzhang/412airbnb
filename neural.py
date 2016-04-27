@@ -1,6 +1,6 @@
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.ensemble import GradientBoostingClassifier
+# from sklearn.linear_model import LogisticRegression
 import numpy as np
 from parse_agegender import *
 from parse_session import *
@@ -159,7 +159,7 @@ def predict(model, x):
     return np.argmax(probs, axis = 1)
 
 
-def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, num_passes = 2000):
+def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, y, num_passes = 300):
 	np.random.seed(0)
 	W1 = np.random.randn(nn_input_dim, nn_hdim) / np.sqrt(nn_input_dim)
 	b1 = np.zeros((1, nn_hdim))
