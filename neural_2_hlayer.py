@@ -137,12 +137,12 @@ def calculate_loss(model):
     b3 = model['b3']
     # Forward propagation to calculate our predictions
     z1 = train.dot(W1) + b1
-    a1 = np.tanh(z1)
-    z2 = a1.dot(W2) + b2
+    inter1 = np.tanh(z1)
+    z2 = inter1.dot(W2) + b2
     # exp_scores = np.exp(z2)
 
-    a2 = np.tanh(z2)
-    z3 = a2.dot(W3) + b3			
+    inter2 = np.tanh(z2)
+    z3 = inter2.dot(W3) + b3			
     exp_scores = np.exp(z3)
 
     probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
@@ -163,12 +163,12 @@ def predict(model, x):
     b3 = model['b3']
     # Forward propagation
     z1 = x.dot(W1) + b1
-    a1 = np.tanh(z1)
-    z2 = a1.dot(W2) + b2
+    inter1 = np.tanh(z1)
+    z2 = inter1.dot(W2) + b2
     # exp_scores = np.exp(z2)
 
-    a2 = np.tanh(z2)
-    z3 = a2.dot(W3) + b3			
+    inter2 = np.tanh(z2)
+    z3 = inter2.dot(W3) + b3			
     exp_scores = np.exp(z3)
 
     print exp_scores
@@ -187,31 +187,31 @@ def predict(model, x):
     return np.argmax(probs, axis = 1)
 
 
-def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, y, num_passes = 100):
+def build_model(train, mid_layer_dim, input_layer_dim, output_layer_dim, num_examples, learning_rate, regular_rate, y, num_passes = 100):
 	np.random.seed(0)
-	# W1 = np.random.randn(nn_input_dim, nn_hdim) / np.sqrt(nn_input_dim)
-	# b1 = np.zeros((1, nn_hdim))
-	# W2 = np.random.randn(nn_hdim, nn_output_dim) / np.sqrt(nn_hdim)
-	# b2 = np.zeros((1, nn_output_dim))
+	# W1 = np.random.randn(input_layer_dim, mid_layer_dim) / np.sqrt(input_layer_dim)
+	# b1 = np.zeros((1, mid_layer_dim))
+	# W2 = np.random.randn(mid_layer_dim, output_layer_dim) / np.sqrt(mid_layer_dim)
+	# b2 = np.zeros((1, output_layer_dim))
 
-	W1 = np.random.randn(nn_input_dim, nn_hdim) / np.sqrt(nn_input_dim)
-	b1 = np.zeros((1, nn_hdim))
-	W2 = np.random.randn(nn_hdim, nn_hdim) / np.sqrt(nn_hdim)
-	b2 = np.zeros((1, nn_hdim))
+	W1 = np.random.randn(input_layer_dim, mid_layer_dim) / np.sqrt(input_layer_dim)
+	b1 = np.zeros((1, mid_layer_dim))
+	W2 = np.random.randn(mid_layer_dim, mid_layer_dim) / np.sqrt(mid_layer_dim)
+	b2 = np.zeros((1, mid_layer_dim))
 
-	W3 = np.random.randn(nn_hdim, nn_output_dim) / np.sqrt(nn_hdim)
-	b3 = np.zeros((1, nn_output_dim))
+	W3 = np.random.randn(mid_layer_dim, output_layer_dim) / np.sqrt(mid_layer_dim)
+	b3 = np.zeros((1, output_layer_dim))
 
 	model = {}
     # gradient descent
 	for i in xrange(0, num_passes):
 		z1 = train.dot(W1) + b1
-		a1 = np.tanh(z1)
-		z2 = a1.dot(W2) + b2
+		inter1 = np.tanh(z1)
+		z2 = inter1.dot(W2) + b2
 		# exp_scores = np.exp(z2)
 
-		a2 = np.tanh(z2)
-		z3 = a2.dot(W3) + b3
+		inter2 = np.tanh(z2)
+		z3 = inter2.dot(W3) + b3
 		exp_scores = np.exp(z3)
 
 		probs = exp_scores / np.sum(exp_scores, axis = 1, keepdims = True)
@@ -221,21 +221,21 @@ def build_model(train, nn_hdim, nn_input_dim, nn_output_dim, num_examples, learn
 		delta3[range(num_examples), y] -= 1
 		# delta3[range(num_examples)] -= y
 
-		# dW2 = (a1.T).dot(delta3)
+		# dW2 = (inter1.T).dot(delta3)
 		# db2 = np.sum(delta3, axis = 0, keepdims = True)
-		# delta2 = delta3.dot(W2.T) * (1 - np.power(a1, 2))
-		# dW1 = np.dot(train.T, delta2)
-		# db1 = np.sum(delta2, axis = 0)
-		dW3 = (a2.T).dot(delta3)
+		# deltinter2 = delta3.dot(W2.T) * (1 - np.power(inter1, 2))
+		# dW1 = np.dot(train.T, deltinter2)
+		# db1 = np.sum(deltinter2, axis = 0)
+		dW3 = (inter2.T).dot(delta3)
 		db3 = np.sum(delta3, axis = 0, keepdims = True)
-		delta2 = delta3.dot(W3.T) * (1 - np.power(a2, 2))
+		deltinter2 = delta3.dot(W3.T) * (1 - np.power(inter2, 2))
 
-		dW2 = (a1.T).dot(delta2)
-		db2 = np.sum(delta2, axis = 0, keepdims = True)
-		delta1 = delta2.dot(W2.T) * (1 - np.power(a1, 2))
+		dW2 = (inter1.T).dot(deltinter2)
+		db2 = np.sum(deltinter2, axis = 0, keepdims = True)
+		deltinter1 = deltinter2.dot(W2.T) * (1 - np.power(inter1, 2))
 
-		dW1 = np.dot(train.T, delta2)
-		db1 = np.sum(delta2, axis = 0)
+		dW1 = np.dot(train.T, deltinter2)
+		db1 = np.sum(deltinter2, axis = 0)
 
 		dW3 += regular_rate * W3
 
@@ -278,8 +278,8 @@ print 'testing parse done'
 num_examples = len(train) # training set size
 # num_examples = 2
 print 'num exp', num_examples
-nn_input_dim = len(train[0])-1 # input layer dimension
-nn_output_dim = 12 # output layer dimension
+input_layer_dim = len(train[0])-1 # input layer dimension
+output_layer_dim = 12 # output layer dimension
  
 # Gradient descent parameters
 learning_rate = 0.000001 # learning rate for gradient descent
@@ -298,8 +298,8 @@ for i in range(len(country_list)):
 	yyy[i][country_list[i]] = 1
 	
 print test[1, :]
-model = build_model(train, 50, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, country_list)
-# model = build_model(train, 23, nn_input_dim, nn_output_dim, num_examples, learning_rate, regular_rate, yyy)
+model = build_model(train, 50, input_layer_dim, output_layer_dim, num_examples, learning_rate, regular_rate, country_list)
+# model = build_model(train, 23, input_layer_dim, output_layer_dim, num_examples, learning_rate, regular_rate, yyy)
 print 'start predicting neural network...'
 predict(model, test[:, 1:])
 # predict(model, train)
